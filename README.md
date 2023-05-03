@@ -17,6 +17,8 @@ Now it's time to connect these virtual machines to our new virtual network. Go t
 Specify the type of the adapter (host-only adapater) and the virtual network to connect to (the one we just created).
 
 We can check the IP addresses of all three machines by running **hostname -I** in each one.
+![Capture d’écran 2023-04-03 102221](https://user-images.githubusercontent.com/116025610/235907432-fb0d2476-ade4-4ce1-b115-bbec98894095.png)
+
 
 In my case :
 - Client machine(physical machine) ip address is 192.168.56.1
@@ -33,4 +35,24 @@ hostnamectl --static set-hostname pg.uc.tn
 - Client machine
 hostnamectl --static set-hostname client.uc.tn
 ![Capture d’écran 2023-04-03 101748](https://user-images.githubusercontent.com/116025610/235900048-62d6e115-b2aa-401a-8494-2280b935c034.png)
+
+*And open a new terminal for changes to take effect.*
+
+*We can check the hostname of a machine by running the command : ```hostname```**
+
+Next, we will be mapping these hostnames to their corresponding IP addresses on all three machines using /etc/hosts file.
+sudo vi /etc/hosts
+
+Now, we should set below information to /etc/hosts **for all three machines** :
+```
+<KDC_IP_ADDRESS>    kdc.insat.tn       kdc
+<PG_SERVER_ADDRESS>    pg.insat.tn        pg
+<CLIENT_ADDRESS>    client.insat.tn    client
+```
+![Capture d’écran 2023-04-03 165242](https://user-images.githubusercontent.com/116025610/235906935-742e31b2-25af-4108-af49-3ec7e387eb11.png)
+
+Once the setup is done, we can check if everything is working fine by using the nslookup command to query the DNS to obtain the mapping we just did and the ping command to ensure that all three machines are reachable.
+
+This an example in the client machine :
+
 
