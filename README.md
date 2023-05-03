@@ -25,5 +25,12 @@ In my case :
 Now that we added ip addresses to the virtual machines, we will start by setting hostnames for each machine :
 - KDC machine
 
-''''hostnamectl --static set-hostname kdc.insat.tn''''
- 
+hostnamectl --static set-hostname kdc.uc.tn
+![Capture d'écran 2023-04-03 094850](https://user-images.githubusercontent.com/116025610/235900241-cef63b22-2211-4fb8-ab5f-8a08e8c5a603.png)
+- Service Server machine
+hostnamectl --static set-hostname pg.uc.tn
+ ![Capture d'écran 2023-04-03 033334](https://user-images.githubusercontent.com/116025610/235900039-5a48181c-be94-4acb-b637-8dc8810b930c.png)
+- Client machine
+hostnamectl --static set-hostname client.uc.tn
+![Capture d’écran 2023-04-03 101748](https://user-images.githubusercontent.com/116025610/235900048-62d6e115-b2aa-401a-8494-2280b935c034.png)
+
