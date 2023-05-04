@@ -68,5 +68,160 @@ During the installation, we will be asked for configuration of :
 
 ![Capture d’écran 2023-04-03 170107](https://user-images.githubusercontent.com/116025610/236161324-608980d0-84d2-4531-a901-a3284da497f2.png)
 - the Kerberos server : 'kdc.uc.tn'
-![Capture d’écran 2023-04-03 170107](https://user-images.githubusercontent.com/116025610/236161819-fa83edea-b9e8-45aa-81f4-96c4c6c59398.png)
+
 ![Capture d’écran 2023-04-03 170157](https://user-images.githubusercontent.com/116025610/236161755-675113e2-c6c0-4e56-a698-ca80d4f51855.png)
+- the administrative server : 'kdc.insat.tn
+![Capture d’écran 2023-04-03 170251](https://user-images.githubusercontent.com/116025610/236165002-19e889c3-b5fb-4124-b4fd-ffcb939ba4c3.png)
+Realm is a logical network, similar to a domain, that all the users and servers sharing the same Kerberos database belong to.
+
+The master key for this KDC database needs to be set once the installation is complete :
+```
+sudo krb5_newrealm
+```
+![Capture d’écran 2023-04-03 170508](https://user-images.githubusercontent.com/116025610/236166159-934ca304-2e91-4095-a364-2c6e332a0055.png)
+
+The users and services in a realm are defined as a principal in Kerberos. These principals are managed by an admin user that we need to create manually :
+```
+    $ sudo kadmin.local
+    kadmin.local:  add_principal root/admin
+    ```
+    ![Capture d’écran 2023-04-03 170821](https://user-images.githubusercontent.com/116025610/236166623-5462126d-4862-43ce-b46b-1ce30f3475ed.png)
+    kadmin.local is a KDC database administration program. We used this tool to create a new principal in the INSAT.TN realm (add_principal).
+
+We can check if the user root/admin was successfully created by running the command : kadmin.local: list_principals. We should see the 'root/admin@INSAT.TN' principal listed along with other default principals.
+![Capture d’écran 2023-04-03 170911](https://user-images.githubusercontent.com/116025610/236166944-af23de5b-1119-4d56-abb8-536d2b5a0c75.png)
+
+Next, we need to grant all access rights to the Kerberos database to admin principal root/admin using the configuration file /etc/krb5kdc/kadm5.acl .
+sudo vi /etc/krb5kdc/kadm5.acl
+
+In this file, we need to add the following line :
+```
+*/admin@UCT.TN    *
+```
+![Capture d'écran 2023-04-03 172914](https://user-images.githubusercontent.com/116025610/236167617-3c9254c1-70ff-46da-8739-88d85da654f2.png)
+
+For changes to take effect, we need to restart the following service : sudo service krb5-admin-server restart
+
+Once the admin user who manages principals is created, we need to create the principals. We will to create principals for both the client machine and the service server machine.
+
+Create a principal for the client
+```
+    $ sudo kadmin.local
+    kadmin.local:  add_principal moussab
+    ```
+    ![Capture d'écran 2023-04-03 170815](https://user-images.githubusercontent.com/116025610/236168364-e2c68120-a11a-432b-bd1a-7d662207a97c.png)
+    Create a principal for the service server
+```
+         kadmin.local:  add_principal postgres/pg.uc.tn
+ ```
+We can check the list of principals by running the command : ```kadmin.local: list_principals```
+
+![Capture d'écran 2023-04-03 194319](https://user-images.githubusercontent.com/116025610/236168884-a936c294-ec74-4226-909e-84eb32d6bb9d.png)
+
+### Service server Machine Configuration
+For an easier configuration of Postgres I changed the Operating System login name from 'yosra' to 'postgres'.
+
+Configuration of Kerberos
+
+Installation of Packages
+
+Following are the packages that need to be installed on the Service server machine :
+```
+$ sudo apt-get update
+$ sudo apt-get install krb5-user libpam-krb5 libpam-ccreds
+```
+During the installation, we will be asked for the configuration of :
+
+- the realm : 'UC.TN' (must be all uppercase)
+- the Kerberos server : 'kdc.uc.tn'
+- the administrative server : 'kdc.uc.tn'
+PS : We need to enter the same information used for KDC Server.
+
+Preparation of the keytab file
+We need to extract the service principal from KDC principal database to a keytab file.
+
+In the KDC machine run the following command to generate the keytab file in the current folder :
+  ````
+   $ ktutil 
+   ktutil:  add_entry -password -p postgres/pg.insat.tn@INSAT.TN -k 1 -e aes256-cts-hmac-sha1-96
+   Password for postgres/pg.insat.tn@INSAT.TN: 
+   ktutil:  wkt postgres.keytab
+  ``` 
+  ![Capture d'écran 2023-04-04 013437](https://user-images.githubusercontent.com/116025610/236170814-e5837ea1-0281-48eb-b2ce-33c886eedd0e.png)
+  Send the keytab file from the KDC machine to the Service server machine :
+In the Postgres server machine make the following directories :
+
+mkdir -p /home/postgres/pgsql/data
+
+In the KDC machine send the keytab file to the Postgres server :
+
+scp postgres.keytab postgres@<PG_SERVER_IP_ADDRESS>:/home/postgres/pgsql/data
+
+! We need to have openssh-server package installed on the service server : sudo apt-get install openssh-server.
+![Capture d'écran 2023-04-04 175121](https://user-images.githubusercontent.com/116025610/236171113-f5d6dd8f-12aa-4e57-839d-29051e00f60f.png)
+
+Verify that the service principal was succesfully extracted from the KDC database :
+
+- List the current keylist
+
+      ktutil:  list
+
+- Read a krb5 keytab into the current keylist
+
+      ktutil:  read_kt pgsql/data/postgres.keytab
+
+- List the current keylist again
+
+       ktutil:  list
+  ![Capture d'écran 2023-04-04 175621](https://user-images.githubusercontent.com/116025610/236171492-e9f1fa74-3b70-4bbc-9527-7cdb798497df.png)
+       #### Configuration of the service (PostgreSQL)
+##### Installation of PostgreSQL
+Update the package lists
+
+sudo apt-get update
+
+Install necessary packages for Postgres
+
+sudo apt-get install postgresql postgresql-contrib
+
+Ensure that the service is started
+
+sudo systemctl start postgresql
+
+Create a Postgres Role for the Client
+We will need to :
+
+create a new role for the client
+
+create user yosra with encrypted password 'some_password';
+
+create a new database
+
+create database moussab;
+
+grant all privileges on this database to the new role
+
+grant all privileges on database moussab to moussab;
+![Capture d'écran 2023-04-04 181034](https://user-images.githubusercontent.com/116025610/236172362-30286857-0b53-427c-a818-310814474f5c.png)
+To ensure the role was successfully created run the following command :
+
+```postgres=# SELECT usename FROM pg_user WHERE usename LIKE 'moussab';```
+
+![Capture d'écran 2023-04-04 181303](https://user-images.githubusercontent.com/116025610/236172721-2704c49b-cc8a-4bb3-bd3a-2deeaa4e1ca4.png)
+The client yosra has now a role in Postgres and can access its database 'yosra'.
+
+Update Postgres Configuration files (postgresql.conf and pg_hba.conf )
+Updating postgresql.conf
+To edit the file run the following command :
+
+````sudo vi /etc/postgresql/12/main/postgresql.conf```
+
+By default, Postgres Server only allows connections from localhost. Since the client will connect to the Postgres server remotely, we will need to modify postgresql.conf so that Postgres Server allows connection from the network :
+
+```listen_addresses = '*'```
+We will also need to specify the keytab file location :
+
+```krb_server_keyfile = '/home/postgres/pgsql/data/postgres.keytab'````
+
+![Capture d'écran 2023-04-05 063723](https://user-images.githubusercontent.com/116025610/236173186-6b7846db-8099-432b-aef0-e33c1467d16b.png)
+
