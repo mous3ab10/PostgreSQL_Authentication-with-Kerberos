@@ -96,7 +96,7 @@ sudo vi /etc/krb5kdc/kadm5.acl
 
 In this file, we need to add the following line :
 ```
-*/admin@UCT.TN    *
+* /admin@UCT.TN    *
 ```
 ![Capture d'écran 2023-04-03 172914](https://user-images.githubusercontent.com/116025610/236167617-3c9254c1-70ff-46da-8739-88d85da654f2.png)
 
@@ -141,10 +141,10 @@ Preparation of the keytab file
 We need to extract the service principal from KDC principal database to a keytab file.
 
 In the KDC machine run the following command to generate the keytab file in the current folder :
-  ````
+  ```
    $ ktutil 
-   ktutil:  add_entry -password -p postgres/pg.insat.tn@INSAT.TN -k 1 -e aes256-cts-hmac-sha1-96
-   Password for postgres/pg.insat.tn@INSAT.TN: 
+   ktutil:  add_entry -password -p postgres/pg.uc.tn@INSAT.TN -k 1 -e aes256-cts-hmac-sha1-96
+   Password for postgres/pg.uc.tn@UC.TN: 
    ktutil:  wkt postgres.keytab
   ``` 
   ![Capture d'écran 2023-04-04 013437](https://user-images.githubusercontent.com/116025610/236170814-e5837ea1-0281-48eb-b2ce-33c886eedd0e.png)
@@ -224,4 +224,26 @@ We will also need to specify the keytab file location :
 ```krb_server_keyfile = '/home/postgres/pgsql/data/postgres.keytab'````
 
 ![Capture d'écran 2023-04-05 063723](https://user-images.githubusercontent.com/116025610/236173186-6b7846db-8099-432b-aef0-e33c1467d16b.png)
+- Updating pg_hba.conf
+HBA stands for host-based authentication. pg_hba.conf is the file used to control clients authentication in PostgreSQL. It is basically a set of records. Each record specifies a connection type, a client IP address range, a database name, a user name, and the authentication method to be used for connections matching these parameters.
 
+The first field of each record specifies the type of the connection attempt made. It can take the following values :
+
+local : Connection attempts using Unix-domain sockets will be matched.
+host : Connection attempts using TCP/IP will be matched (SSL or non-SSL as well as GSSAPI encrypted or non-GSSAPI encrypted connection attempts).
+hostgssenc : Connection attempts using TCP/IP will be matched, but only when the connection is made with GSSAPI encryption.
+This field can take other values that we won't use in this setup. For futher information you can visit the official documentation.
+
+Some of the possible choices for the authentication method field are the following :
+
+trust : Allow the connection unconditionally.
+reject : Reject the connection unconditionally.
+md5 : Perform SCRAM-SHA-256 or MD5 authentication to verify the user's password.
+gss : Use GSSAPI to authenticate the user.
+peer : Obtain the client's operating system user name from the operating system and check if it matches the requested database user name. This is only available for local connections.
+So to allow the user 'moussab' to connect remotely using Kerberos we will add the following line :
+```
+# IPv4 local connections:
+hostgssenc   moussab     moussab          <IP_ADDRESS_RANGE>         gss include_realm=0 krb_realm=UC.TN
+```
+![ff](https://user-images.githubusercontent.com/116025610/236176078-c517df5a-2fcf-43ed-8e4c-2871994c8a72.png)
