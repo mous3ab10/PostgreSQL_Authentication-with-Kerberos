@@ -246,4 +246,46 @@ So to allow the user 'moussab' to connect remotely using Kerberos we will add th
 # IPv4 local connections:
 hostgssenc   moussab     moussab          <IP_ADDRESS_RANGE>         gss include_realm=0 krb_realm=UC.TN
 ```
-![ff](https://user-images.githubusercontent.com/116025610/236176078-c517df5a-2fcf-43ed-8e4c-2871994c8a72.png)
+### Client Machine Configuration
+
+Following are the packages that need to be installed on the Client machine :
+```
+$ sudo apt-get update
+$ sudo apt-get install krb5-user libpam-krb5 libpam-ccreds
+```
+During the installation, we will be asked for configuration of :
+
+- the realm : 'INSAT.TN' (must be all uppercase)
+- the Kerberos server : 'kdc.insat.tn'
+- the administrative server : 'kdc.insat.tn'
+PS : We need to enter the same information used for KDC Server.
+
+### User Authentication
+Once the setup is complete, it's time for the client to authenticate using kerberos.
+
+First, try to connect to PostgreSQL remotely :
+
+```
+$ psql -d yosra -h pg.insat.tn -U yosra
+```
+![Capture d’écran 2023-05-04 113205](https://user-images.githubusercontent.com/116025610/236181206-2b481313-5eff-4994-b3ad-76f596b6ed63.png)
+
+-d specifies the database, -U specifies the postgres role and -h specifies the ip address of the machine hosting postgres.
+n the client machine check the cached credentials :
+
+```$ klist```
+
+Then initial the user authentication :
+
+```$ kinit yosra```
+
+And check the ticket granting ticket (TGT) :
+
+```$ klist```
+![Capture d’écran 2023-05-04 113252](https://user-images.githubusercontent.com/116025610/236181836-5debe389-d531-4a9b-84e0-1bb15573f1ec.png)
+
+Now try to connect once again :
+![ff](https://user-images.githubusercontent.com/116025610/236181879-da48cc4f-e64f-4b1e-8ee0-19eeb5bdb767.png)
+Now you can check the service ticket : ```$ klist```
+![Capture d’écran 2023-05-04 113351](https://user-images.githubusercontent.com/116025610/236182004-af8fa630-ce31-4e15-9a68-24b714d61a9b.png)
+
