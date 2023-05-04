@@ -45,9 +45,9 @@ sudo vi /etc/hosts
 
 Now, we should set below information to /etc/hosts **for all three machines** :
 ```
-<KDC_IP_ADDRESS>    kdc.insat.tn       kdc
-<PG_SERVER_ADDRESS>    pg.insat.tn        pg
-<CLIENT_ADDRESS>    client.insat.tn    client
+<KDC_IP_ADDRESS>    kdc..tn  uc     kdc
+<PG_SERVER_ADDRESS>    pg.uc.tn        pg
+<CLIENT_ADDRESS>    client.uc.tn    client
 ```
 ![Capture d’écran 2023-04-03 165242](https://user-images.githubusercontent.com/116025610/235906935-742e31b2-25af-4108-af49-3ec7e387eb11.png)
 
@@ -55,4 +55,18 @@ Once the setup is done, we can check if everything is working fine by using the 
 
 This an example in the client machine :
 
+![Capture d’écran 2023-04-03 165242](https://user-images.githubusercontent.com/116025610/236160692-dd2c040c-6e34-4c13-b5f1-578f20fb76a5.png)
 
+### Key Distribution Center Machine Configuration
+Following are the packages that need to installed on the KDC machine :
+```
+$ sudo apt-get update
+   $ sudo apt-get install krb5-kdc krb5-admin-server krb5-config
+```
+During the installation, we will be asked for configuration of :
+- the realm : 'UC.TN' (must be all uppercase)
+
+![Capture d’écran 2023-04-03 170107](https://user-images.githubusercontent.com/116025610/236161324-608980d0-84d2-4531-a901-a3284da497f2.png)
+- the Kerberos server : 'kdc.uc.tn'
+![Capture d’écran 2023-04-03 170107](https://user-images.githubusercontent.com/116025610/236161819-fa83edea-b9e8-45aa-81f4-96c4c6c59398.png)
+![Capture d’écran 2023-04-03 170157](https://user-images.githubusercontent.com/116025610/236161755-675113e2-c6c0-4e56-a698-ca80d4f51855.png)
