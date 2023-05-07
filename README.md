@@ -85,16 +85,19 @@ The users and services in a realm are defined as a principal in Kerberos. These 
      ```$ sudo kadmin.local
     kadmin.local:  add_principal root/admin```
  ![Capture d’écran 2023-04-03 170821](https://user-images.githubusercontent.com/116025610/236166623-5462126d-4862-43ce-b46b-1ce30f3475ed.png)
-    kadmin.local is a KDC database administration program. We used this tool to create a new principal in the INSAT.TN realm (add_principal).
+    
+    
+    kadmin.local is a KDC database administration program. We used this tool to create a new principal in the UC.TN realm (add_principal).
 
-We can check if the user root/admin was successfully created by running the command : kadmin.local: list_principals. We should see the 'root/admin@INSAT.TN' principal listed along with other default principals.
+We can check if the user root/admin was successfully created by running the command : kadmin.local: list_principals. We should see the 'root/admin@UC.TN' principal listed along with other default principals.
+
 ![Capture d’écran 2023-04-03 170911](https://user-images.githubusercontent.com/116025610/236166944-af23de5b-1119-4d56-abb8-536d2b5a0c75.png)
 
 Next, we need to grant all access rights to the Kerberos database to admin principal root/admin using the configuration file /etc/krb5kdc/kadm5.acl .
 sudo vi /etc/krb5kdc/kadm5.acl
 
 In this file, we need to add the following line :
-```*/admin@UCT.TN*```
+```/admin@UCT.TN```
 ![Capture d'écran 2023-04-03 172914](https://user-images.githubusercontent.com/116025610/236167617-3c9254c1-70ff-46da-8739-88d85da654f2.png)
 
 For changes to take effect, we need to restart the following service : sudo service krb5-admin-server restart
@@ -107,9 +110,10 @@ $ sudo kadmin.local
     kadmin.local:  add_principal moussab
 ```
 ![Capture d'écran 2023-04-03 170815](https://user-images.githubusercontent.com/116025610/236168364-e2c68120-a11a-432b-bd1a-7d662207a97c.png)
+    
     Create a principal for the service server
-```kadmin.local:  add_principal postgres/pg.uc.tn```
-We can check the list of principals by running the command : ```kadmin.local: list_principals```
+```kadmin.local:add_principal postgres/pg.uc.tn```
+We can check the list of principals by running the command : ```kadmin.local:list_principals```
 
 ![Capture d'écran 2023-04-03 194319](https://user-images.githubusercontent.com/116025610/236168884-a936c294-ec74-4226-909e-84eb32d6bb9d.png)
 
