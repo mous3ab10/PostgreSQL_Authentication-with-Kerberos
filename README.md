@@ -265,7 +265,7 @@ Once the setup is complete, it's time for the client to authenticate using kerbe
 First, try to connect to PostgreSQL remotely :
 
 ```
-$ psql -d yosra -h pg.uc.tn -U moussab
+$ psql -d moussab -h pg.uc.tn -U moussab
 ```
 ![Capture d’écran 2023-05-04 113205](https://user-images.githubusercontent.com/116025610/236181206-2b481313-5eff-4994-b3ad-76f596b6ed63.png)
 
